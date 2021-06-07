@@ -25,12 +25,13 @@ SECRET_KEY = 'django-insecure-hj1-io(2$h$i#kp_5_df9ezw&p@9q=3sveyu66)71lo!t0tmia
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.10"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'main.apps.MainConfig',
     'django.contrib.admin',
     'django.contrib.auth',
