@@ -5,7 +5,6 @@ from .models import SensorType
 from .models import SensorModel
 from .models import CommunicationType
 from .models import RequiredPin
-from .models import MeasuredVariable
 from .models import DataAcquisitionModuleType
 from .models import DataAcquisitionModule
 from .models import Component
@@ -16,7 +15,6 @@ admin.site.register(SensorType)
 admin.site.register(SensorModel)
 admin.site.register(CommunicationType)
 admin.site.register(RequiredPin)
-admin.site.register(MeasuredVariable)
 admin.site.register(DataAcquisitionModuleType)
 admin.site.register(DataAcquisitionModule)
 admin.site.register(Component)

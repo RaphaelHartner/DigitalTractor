@@ -24,13 +24,6 @@ class SensorModel(models.Model):
     def __str__(self):
         return self.sensor_type.name + "_" + self.model_name
 
-class MeasuredVariable(models.Model):
-    sensor_model = models.ForeignKey(SensorModel, on_delete=models.CASCADE, related_name='measured_variables')
-    variable_name = models.CharField(max_length=80)
-    unit = models.CharField(max_length=80)
-    def __str__(self):
-        return self.sensor_model.model_name + "_" + self.variable_name
-
 # Data Acquisition Module
 class DataAcquisitionModuleType(models.Model):
     dam_name = models.CharField(max_length=80)
@@ -51,6 +44,12 @@ class DataAcquisitionModule(models.Model):
 class Component(models.Model):
     component_name = models.CharField(max_length=80)
     parent_component = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    def get_full_name(self):
+        if self.parent_component:
+            return self.parent_component.get_full_name() + '/' + self.component_name
+        else:
+            return self.component_name
+
     def __str__(self):
         return self.component_name
 
@@ -58,6 +57,9 @@ class SensorImplementation(models.Model):
     dam = models.ForeignKey(DataAcquisitionModule, on_delete=models.CASCADE, related_name='sensor_implementations')
     sensor_model = models.OneToOneField(SensorModel, on_delete=models.CASCADE, related_name='sensor_implementations')
     component = models.ForeignKey(Component, on_delete=models.CASCADE, related_name='sensor_implementations')
+    cycle_time = models.IntegerField(default=1000) # cycle time in milliseconds
+    measured_variable = models.CharField(max_length=80,blank=True, default='')
+    measured_unit = models.CharField(max_length=80, blank=True, default='')
     def __str__(self):
         return str(self.sensor_model) + " at " + str(self.dam) + " measuring " + str(self.component)
 
@@ -67,3 +69,23 @@ class PinUsage(models.Model):
     assigned_pin = models.CharField(max_length=20)
     def __str__(self):
         return str(self.sensor_implementation) + " (" + str(self.required_pin.pin_name) + " on " + str(self.assigned_pin) + ")"
+
+
+######################### model views #######################################
+class PinUsageDataView():
+    def __init__(self, required_pin):
+        self.pin_name = required_pin.pin_name
+        self.pin_number = required_pin.pinusage.assigned_pin
+
+class SensorImplDataView():
+    def __init__(self, sensor_impl:SensorImplementation):
+        self.component_name = sensor_impl.component.get_full_name()
+        self.cycle_time = sensor_impl.cycle_time
+        self.measured_variable = sensor_impl.measured_variable
+        self.measured_unit = sensor_impl.measured_unit
+        self.sensor_name = sensor_impl.sensor_model.model_name
+        self.communication_name = sensor_impl.sensor_model.communication_type.communication_name
+        self.pins = []
+        for p in sensor_impl.sensor_model.communication_type.required_pins.all():
+            self.pins.append(PinUsageDataView(p))
+
